@@ -6,6 +6,14 @@ const engineSettings = {
 		"Show_Delta_Time":false,
 		"Show_Debug_Cursor":false
 	},
+	"Settings_Menu":{
+		"Image_Smoothing":true,
+		"Shadows":true,
+		"Debug":true,
+		"Show_FPS":true,
+		"Show_DELTA":true,
+		"Show_Debug_Cursor":true
+	},
 	"Addons":[]
 };
 
@@ -41,32 +49,39 @@ let Settings_Icon = new imageData("settings_icon", imagePath+"Settings.png", new
 const modVars = new globalVars();
 
 function globalVars() {
-	this.vars = [];
-	this.add = function(value=null, name="", id="") {
-		let check = this.vars.filter((v) => (v.name == name && v.id == id));
-		if (check.length == 0) {
-			this.vars.push({"value":value, "name":name, "id":id});
+	this.modVarIndex = {};
+	this.deleteMod = (id="") => {
+		delete this.modVarIndex[id];
+	}
+	this.addMod = (id="") => {
+		if (this.modVarIndex[id] == undefined) {
+			this.modVarIndex[id] = {};
+		} else {
+			this.deleteMod(id);
+			this.modVarIndex[id] = {};
 		}
 	}
-	this.delete = function(name="", id="") {
-		let check = this.vars.filter((v) => (v.name == name && v.id == id));
-		if (check.length != 0) {
-			this.vars.forEach((v, i) => {
-				if (v.name == name && v.id == id) {
-					this.vars.splice(i, 1);
-				}
-			});
+	this.addVar = (id="", name="", value="") => {
+		if (this.modVarIndex[id] != undefined) {
+			this.modVarIndex[id][name] = value;
+		} else {
+			this.addMod(id);
+			this.modVarIndex[id][name] = value;
 		}
 	}
-	this.deleteById = function(id="") {
-		this.vars = this.vars.filter((v) => (v.id != id));
+	this.deleteVar = (id="", name="") => {
+		if (this.modVarIndex[id] != undefined) {
+			delete this.modVarIndex[id][name];
+		}
 	}
-	this.get = function(name="", id="") {
-		return this.vars.filter((v) => (v.name == name && v.id == id))[0].value;
-	}
-	this.set = function(value=null, name="", id="") {
-		this.vars.filter((v) => (v.name == name && v.id == id))[0].value = value;
-	}
+}
+
+const getModVar = (id="", name="") => {
+	return modVars.modVarIndex[id][name];
+}
+
+const setModVar = (id="", name="", value="") => {
+	modVars.modVarIndex[id][name] = value;
 }
 
 //Checks number to see if it's even or odd
@@ -262,10 +277,25 @@ function Vector2(x=0, y=0, r=0, o=0, s=0) {
 	this.array = function() {
 		return [this.x, this.y];
 	}
+	//Vector2 to angle
+	this.angle = function(rad=true) {
+		let calR = parseFloat(Math.atan2(this.y, this.x).toFixed(2));
+		if (rad) {
+			return calR;
+		} else {
+			let calD = Math.round(radToDeg(calR+1.57079633));
+			if (calR == 0) {
+				return 0;
+			} else {
+				return calD;
+			}
+		}
+	}
 	//Vector2 duplicate
 	this.duplicate = function() {
 		return new Vector2(this.x, this.y, this.r, this.o, this.s);
 	}
+	this.dup = this.duplicate;
 	//Compare vectors
 	this.same = function(vector2=ZERO) {
 		let result = false;
@@ -297,6 +327,7 @@ function Vector2(x=0, y=0, r=0, o=0, s=0) {
 		return new Vector2(this.x-vector2.x, this.y-vector2.y);
 	}
 	this.neg = function(place="x") { //"x" or "y"
+		place = place.toLowerCase();
 		if (place == "x") {
 			return new Vector2(-this.x, this.y);
 		}
@@ -515,19 +546,13 @@ function deleteUpdate(mode=1, op1, op2) {
 	}
 	switch (mode) {
 		case 0:
-			updateArray = updateArray.filter((u) => {
-				return !(u.id == op1 && u.tag == op2);
-			});
+			updateArray = updateArray.filter((u) => !(u.id == op1 && u.tag == op2));
 		break;
 		case 1:
-			updateArray = updateArray.filter((u) => {
-				return !(u.id == op1);
-			});
+			updateArray = updateArray.filter((u) => !(u.id == op1));
 		break;
 		case 2:
-			updateArray = updateArray.filter((u) => {
-				return !(u.tag == op1);
-			});
+			updateArray = updateArray.filter((u) => !(u.tag == op1));
 		break;
 	}
 }
@@ -590,6 +615,7 @@ function Shadow(offset=ZERO, color="", blur=0) {
 	this.duplicate = function() {
 		return new Shadow(this.offset, this.color, this.blur);
 	}
+	this.dup = this.duplicate;
 }
 
 //NameTag
@@ -642,6 +668,7 @@ function nameTag(name="",tag="") {
 	this.duplicate = function() {
 		return new nameTag(this.name, this.tag);
 	}
+	this.dup = this.duplicate;
 }
 
 //Line data
@@ -666,6 +693,7 @@ function lineData(stroked=false, cap=0, width=1, dashOffset=0, pattern=[]) {
 	this.duplicate = function() {
 		return new lineData(this.stroked, this.cap, this.width, this.dashOffset, this.pattern);
 	}
+	this.dup = this.duplicate;
 }
 
 //Color data
@@ -706,6 +734,7 @@ function colorData(color="white", alpha=1, comp=0) {
 	this.duplicate = function() {
 		return new colorData(this.color, this.alpha, this.compMode);
 	}
+	this.dup = this.duplicate;
 	this.same = function(data, mode=0) {
 		if (mode < 0) {
 			mode = 0;
@@ -785,6 +814,7 @@ function gradientData(type=0, start=new Vector2(), end=new Vector2(), colors=[])
 	this.duplicate = function() {
 		return new gradientData(this.type, this.start, this.end, this.colors);
 	}
+	this.dup = this.duplicate;
 }
 
 //Image data
@@ -842,6 +872,7 @@ function baseObject(autoAdd=true, nameTag=BLANK_NAMETAG, size=ZERO, position=ZER
 	this.rotOrigin = rotOrigin;
 	this.startPosition = position.duplicate();
 	this.marked = false;
+	this.overridePositionUpdateFunction = false; //Always runs the update position function even when the speed is 0 if true;
 	if (this.rotOrigin == null) {
 		this.rotOrigin = this.position;
 	}
@@ -852,9 +883,13 @@ function baseObject(autoAdd=true, nameTag=BLANK_NAMETAG, size=ZERO, position=ZER
 			this.position.y -= velocity.y;
 		}
 	}
+	this.destroy = function() {
+		deleteByNameTag(this.nameTag);
+	}
 	this.duplicate = function() {
 		return new baseObject(this.autoAdd, this.nameTag.duplicate(), this.size.duplicate(), this.position.duplicate(), this.color.duplicate(), this.shadow.duplicate(), this.rotOrigin.duplicate());
 	}
+	this.dup = this.duplicate;
 }
 
 //Sets up object
@@ -896,6 +931,7 @@ function Rectangle(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	this.duplicate = function() {
 		return new Rectangle(this.layerNumber, this.base.duplicate(), this.line.duplicate());
 	}
+	this.dup = this.duplicate;
 	this.draw = function() {
 		setupObject(this.base, this.line);
 		points = [
@@ -930,6 +966,7 @@ function Circle(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	this.duplicate = function() {
 		return new Circle(this.layerNumber, this.base.duplicate(), this.line.duplicate());
 	}
+	this.dup = this.duplicate;
 	this.draw = function() {
 		setupObject(this.base, this.line);
 		ctx.beginPath();
@@ -959,6 +996,7 @@ function Light(layerNumber=1, base=EMPTY_OBJECT, lightIntensity=new Vector2(), l
 	this.duplicate = function() {
 		return new Light(this.layerNumber, this.base.duplicate(), this.lightIntensity.duplicate(), this.line.duplicate());
 	}
+	this.dup = this.duplicate;
 	this.draw = function() {
 		setupObject(this.base, this.line);
 		ctx.beginPath();
@@ -1009,6 +1047,7 @@ function Sprite(layerNumber=1, base=EMPTY_OBJECT, animator=null) {
 			return new Sprite(this.layerNumber, this.base.duplicate(), null);
 		}
 	}
+	this.dup = this.duplicate;
 	this.draw = function() {
 		setupObject(this.base, DEFAULT_LINE);
 		let newSprite = document.getElementById(this.base.color.color);
@@ -1067,6 +1106,7 @@ function spriteMind(clipPos=new Vector2(), clipSize=null) {
 	this.duplicate = function() {
 		return new spriteMind(this.clipPos, this.clipSize);
 	}
+	this.dup = this.duplicate;
 }
 
 //Sprite animator
@@ -1116,6 +1156,7 @@ function spriteAnimator(image=null, size=ZERO, speed=1, loop=false) {
 	this.duplicate = function() {
 		return new spriteAnimator(this.image, this.size.duplicate(), this.speed, this.loop);
 	}
+	this.dup = this.duplicate;
 }
 
 //Text class
@@ -1198,6 +1239,7 @@ function TextBox(layerNumber=1, font="30px Arial", textColor="white", base=EMPTY
 	this.duplicate = function() {
 		return new TextBox(this.layerNumber, this.font, this.textColor, this.base.duplicate(), this.line.duplicate());
 	}
+	this.dup = this.duplicate;
 	
 	//Keybuffer
 	let thisKeyBuffer = [];
@@ -1508,7 +1550,7 @@ function Renderer() {
 		if (typeof i.base.size.x == "string" || (i.base.position.x-(i.base.size.x/2) <= screen.resolution.x && i.base.position.x+(i.base.size.x/2) >= 0 && i.base.position.y-(i.base.size.y/2) <= screen.resolution.y && i.base.position.y+(i.base.size.y/2) >= 0)) {
 			i.draw();
 		}
-		if (i.base.position.s != 0) {
+		if (i.base.position.s != 0 || i.base.overridePositionUpdateFunction) {
 			i.base.updatePosition();
 		}
 	});
@@ -1822,7 +1864,19 @@ function mod(path="", id="") {
 		domElements.forEach((e) => {
 			e.remove();
 		});
-		modVars.deleteById(this.id);
+		try {
+			eval(this.id+"_unload()");
+		} catch (e) {}
+		try {
+			eval(this.id+"_Unload()");
+		} catch (e) {}
+		try {
+			getModVar(this.id, "unload")();
+		} catch (e) {}
+		try {
+			getModVar(this.id, "Unload")();
+		} catch (e) {}
+		modVars.deleteMod(this.id);
 		let script = document.getElementById(this.id);
 		let scriptV = document.getElementById(this.id+"V");
 		ModLoader.modDiv.removeChild(script);
@@ -2053,6 +2107,134 @@ function modLoader() {
 	}
 }
 
+//Controller stuff
+let controllers = {};
+const controllerManager = new controllerMG();
+
+function controllerBttnBinding(player=1, func=null, funcName="", defaultBttn=0) {
+	this.player = player;
+	this.func = func;
+	this.funcName = funcName;
+	this.defaultBttn = defaultBttn;
+	if (controllerManager.config[this.player] == undefined) {
+		controllerManager.config[this.player] = {"controls":[]};
+		controllerManager.config[this.player].controls.push({"funcName":this.funcName,"func":this.func,"bttn":this.defaultBttn});
+	} else {
+		if (controllerManager.config[this.player].controls == undefined) {
+			controllerManager.config[this.player] = {"controls":[]};
+			controllerManager.config[this.player].controls.push({"funcName":this.funcName,"func":this.func,"bttn":this.defaultBttn});
+		} else {
+			controllerManager.config[this.player].controls.push({"funcName":this.funcName,"func":this.func,"bttn":this.defaultBttn});
+		}
+	}
+	this.duplicate = () => {
+		return new controllerBttnBinding(this.player, this.func, this.funcName, this.defaultBttn);
+	}
+	this.dup = this.duplicate;
+}
+
+function controllerAxesBinding(player=1, func=null, funcName="", axes=0, deadzone=0.2) {
+	this.player = player;
+	this.func = func;
+	this.funcName = funcName;
+	this.axes = axes; //0- left stick, 1- right stick
+	this.deadzone = deadzone;
+	if (axes > 1) {
+		this.axes = 1;
+	}
+	if (axes < 0) {
+		this.axes = 0;
+	}
+	if (controllerManager.config[this.player] == undefined) {
+		controllerManager.config[this.player] = {"axes":[]};
+		controllerManager.config[this.player].axes.push({"funcName":this.funcName,"func":this.func,"bttn":this.axes,"deadzone":this.deadzone});
+	} else {
+		if (controllerManager.config[this.player].axes == undefined) {
+			controllerManager.config[this.player] = {"axes":[]};
+			controllerManager.config[this.player].axes.push({"funcName":this.funcName,"func":this.func,"bttn":this.axes,"deadzone":this.deadzone});
+		} else {
+			controllerManager.config[this.player].axes.push({"funcName":this.funcName,"func":this.func,"bttn":this.axes,"deadzone":this.deadzone});
+		}
+	}
+	this.duplicate = () => {
+		return new controllerBttnBinding(this.player, this.func, this.funcName, this.axes, this.deadzone);
+	}
+	this.dup = this.duplicate;
+}
+
+function saveControllerConfig() {
+	
+}
+
+function controllerMG() {
+	this.players = 0; //0- no support
+	this.connected = 0;
+	
+	this.config = {};
+	
+	this.assignControllers = () => {
+		for (let i=1;i<this.players;i++) {
+			if (this.config[i] != undefined) {
+				if (this.config[i].controllerId == undefined) {
+					this.config[i].controllerId = i-1;
+				}
+			}
+		} 
+	}
+	this.assignControllers();
+	
+	this.calDeadzone = (vec, deadzone) => {
+		let m = Math.sqrt(vec.x*vec.x+vec.y*vec.y);
+		if (m < deadzone) {
+			return new Vector2(0, 0, true);
+		}
+		let over = m-deadzone;
+		let nover = over/(1-deadzone);
+		let nx = vec.x/m;
+		let ny = vec.y/m;
+		return new Vector2(clamp(nx*nover, -1, 1), clamp(ny*nover, -1, 1), (vec.x==0 && vec.y==0));
+	}
+	
+	const update = () => {
+		controllers = (navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []));
+		this.connected = controllers.filter((i)=>{return i!=null}).length;
+		if (this.players == 0) {
+			if (keybinder.controllerDiv.style.display != "none") {
+				keybinder.controllerDiv.style.display = "none";
+			}
+		} else {
+			if (keybinder.controllerDiv.style.display != "block") {
+				keybinder.controllerDiv.style.display = "block";
+			}
+			for (let i=1;i<this.players;i++) {
+				if (this.config[i] != undefined) {
+					let playerControls = this.config[i];
+					if (playerControls.axes != undefined) {
+						for (let a=0,length=playerControls.axes.length;a<length;a++) {
+							let axesData = playerControls.axes[a];
+							if (controllers[playerControls.controllerId] != undefined && controllers[playerControls.controllerId] != null) {
+								switch (axesData.bttn) {
+									case 0:
+										let calLeft = this.calDeadzone(new Vector2(controllers[playerControls.controllerId].axes[0], controllers[playerControls.controllerId].axes[1]), axesData.deadzone);
+										playerControls.leftStick = calLeft;
+										axesData.func(playerControls.leftStick);
+									break;
+									case 1:
+										let calRight = this.calDeadzone(new Vector2(controllers[playerControls.controllerId].axes[2], controllers[playerControls.controllerId].axes[3]), axesData.deadzone);
+										playerControls.rightStick = calRight;
+										axesData.func(playerControls.rightStick);
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	addUpdate(update, "controller_manager");
+}
+
 //Keybinder
 const keys = [];
 const keyBuffer = [];
@@ -2065,6 +2247,7 @@ function keyBinder() {
 	this.title = null;
 	this.keySep = null;
 	this.closeBttn = null;
+	this.controllerDiv = null;
 	this.menuSize = new Vector2(800, 600);
 	this.menuScale = 1;
 	this.show = function() {
@@ -2092,7 +2275,7 @@ function keyBinder() {
 		document.body.appendChild(this.menu);
 		//Title
 		this.title = document.createElement('h1');
-		this.title.innerHTML = "Keybinder";
+		this.title.innerHTML = "Controls";
 		this.title.style.textAlign = "center";
 		this.title.style.color = "white";
 		this.title.style.marginLeft = "0px";
@@ -2108,10 +2291,10 @@ function keyBinder() {
 		this.keySep.style.marginTop = "0px";
 		this.keySep.style.marginBottom = "0px";
 		this.keySep.style.width = "100%";
-		this.keySep.style.height = "90%";
+		this.keySep.style.height = "80%";
 		this.keySep.style.overflowX = "hidden";
 		this.keySep.style.overflowY = "scroll";
-		this.keySep.style.position = "none";
+		this.keySep.style.position = "fixed";
 		this.menu.appendChild(this.keySep);
 		//Close button
 		this.closeBttn = document.createElement('input');
@@ -2137,17 +2320,28 @@ function keyBinder() {
 		};
 		this.menu.appendChild(this.closeBttn);
 		addUpdate(updater, "key_binder");
+		//Controller stuff
+		this.controllerDiv = document.createElement('div');
+		this.controllerDiv.id = "Controller";
+		this.controllerDiv.style.backgroundColor = "darkgrey";
+		this.controllerDiv.style.marginLeft = "0px";
+		this.controllerDiv.style.marginRight = "0px";
+		this.controllerDiv.style.marginTop = "0px";
+		this.controllerDiv.style.marginBottom = "1px";
+		this.controllerDiv.style.width = "100%";
+		this.controllerDiv.style.height = "100px";
+		this.controllerDiv.style.boxShadow = "0px 5px black";
+		this.keySep.appendChild(this.controllerDiv);
 	}
-	const updater = () => {this.update()};
-	this.update = function() {
+	const updater = () => {
 		this.menu.style.width = (this.menuSize.x*screen.getScale().x)+"px";
 		this.menu.style.height = (this.menuSize.y*screen.getScale().y)+"px";
 		this.menu.style.top = (screen.getHalfDeviceRes().y)-((this.menuSize.y/2)*screen.getScale().y)+"px";
 		this.menu.style.left = (screen.getHalfDeviceRes().x)-((this.menuSize.x/2)*screen.getScale().x)+"px";
 		this.title.style.fontSize = ((35*this.menuScale)*screen.getScale().x)+"px";
 		this.keySep.style.width = this.menu.style.width;
-		this.keySep.style.height = (parseFloat(this.menu.style.height)-((40*this.menuScale)*screen.getScale().y))+"px";
-		this.keySep.style.top = (parseFloat(this.menu.style.top)+((40*this.menuScale)*screen.getScale().y))+"px";
+		this.keySep.style.height = (parseFloat(this.menu.style.height)-(40*screen.getScale().y))+"px";
+		this.keySep.style.top = (parseFloat(this.menu.style.top)+(40*screen.getScale().y))+"px";
 		this.keySep.style.left = this.menu.style.left;
 		this.closeBttn.style.marginRight = ((5*this.menuScale)*screen.getScale().x)+"px";
 		this.closeBttn.style.marginTop = ((5*this.menuScale)*screen.getScale().y)+"px";
@@ -2159,7 +2353,6 @@ function keyBinder() {
 			k.keys.forEach((k2, i) => {
 				let idElement_2 = document.getElementById(k.id+"_"+i);
 				idElement_2.style.width = ((100*this.menuScale)*screen.getScale().x)+"px";
-				idElement_2.innerHTML = idElement_2.innerHTML.slice(0, 3);
 				if (idElement_2.innerHTML.length > 3) {
 					let scaleFactor = 1-(3/idElement_2.innerHTML.length);
 					idElement_2.style.fontSize = ((35*this.menuScale)*Math.abs(screen.getScale().x-scaleFactor))+"px";
@@ -2197,7 +2390,11 @@ function key(id="", thisKeys=[], functions=new Vector2(), ifPaused=true) {
 	kV.style.width = "100%";
 	kV.style.height = "50px";
 	kV.style.boxShadow = "0px 5px black";
-	keybinder.keySep.appendChild(kV);
+	if (keybinder.keySep.children[0].id == "Controller") {
+		keybinder.keySep.insertBefore(kV, keybinder.keySep.children[0]);
+	} else {
+		keybinder.keySep.insertBefore(kV, keybinder.keySep.children[keybinder.keySep.children.length-1]);
+	}
 	//Key name
 	let keyNameV = document.createElement('h1');
 	keyNameV.id = id+"_name";
@@ -2213,7 +2410,7 @@ function key(id="", thisKeys=[], functions=new Vector2(), ifPaused=true) {
 	this.keys.forEach((t, i) => {
 		let keyBttnV = document.createElement('button');
 		keyBttnV.id = this.id+"_"+i;
-		keyBttnV.innerHTML = t.key;
+		keyBttnV.innerHTML = t.key.slice(0, 3);
 		keyBttnV.style.fontSize = "35px";
 		keyBttnV.style.marginLeft = "0px";
 		keyBttnV.style.marginRight = "0px";
@@ -2231,7 +2428,7 @@ function key(id="", thisKeys=[], functions=new Vector2(), ifPaused=true) {
 		kV.appendChild(keyBttnV);
 	});
 	this.printKeys = function() {
-		keyNameV.innerHTML = this.id+" key: ";
+		keyNameV.innerHTML = this.id+": ";
 		this.keys.forEach((t,i) => {
 			//Name keys
 			let length = this.keys.length-1;
@@ -2242,14 +2439,14 @@ function key(id="", thisKeys=[], functions=new Vector2(), ifPaused=true) {
 			}
 			//Name bttns
 			let bttn = document.getElementById(this.id+"_"+i);
-			bttn.innerHTML = t.key.toUpperCase();
+			bttn.innerHTML = t.key.slice(0, 3).toUpperCase();
 		});
 		
 		pickKey = -1;
 	}
 	const changeKey = (index=0, object=null) => {this.changeKey(index, object);};
 	this.changeKey = function(index=0, object=null) {
-		keyNameV.innerHTML = "Press key:";
+		keyNameV.innerHTML = this.id+": Press new key!";
 		object.innerHTML = "*";
 		pickKey = index;
 		keyLock = true;
@@ -2686,6 +2883,36 @@ function optionsMenu() {
 		engineSettings.Debug.Show_Delta_Time = this.deltaChkBx.checked;
 		this.debugCursorTxt.style.fontSize = ((35*this.menuScale)*screen.getScale().x)+"px";
 		engineSettings.Debug.Show_Debug_Cursor = this.debugCursorChkBx.checked;
+		if (engineSettings.Settings_Menu.Image_Smoothing) {
+			this.imageSmoothingDiv.style.display = "inherit";
+		} else {
+			this.imageSmoothingDiv.style.display = "none";
+		}
+		if (engineSettings.Settings_Menu.Shadows) {
+			this.shadowsDiv.style.display = "inherit";
+		} else {
+			this.shadowsDiv.style.display = "none";
+		}
+		if (engineSettings.Settings_Menu.Debug) {
+			this.debugDiv.style.display = "inherit";
+		} else {
+			this.debugDiv.style.display = "none";
+		}
+		if (engineSettings.Settings_Menu.Show_FPS) {
+			this.fpsDiv.style.display = "inherit";
+		} else {
+			this.fpsDiv.style.display = "none";
+		}
+		if (engineSettings.Settings_Menu.Show_DELTA) {
+			this.deltaDiv.style.display = "inherit";
+		} else {
+			this.deltaDiv.style.display = "none";
+		}
+		if (engineSettings.Settings_Menu.Show_Debug_Cursor) {
+			this.debugCursorDiv.style.display = "inherit";
+		} else {
+			this.debugCursorDiv.style.display = "none";
+		}
 	}
 	addUpdate(update, "settings menu");
 }
