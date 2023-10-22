@@ -294,8 +294,8 @@ const VecY = (y=0) => {
 }
 
 //Shorthand function for creating vectors
-const Vec2 = (x=0, y=0) => {
-	return new Vector2(x, y);
+const Vec2 = (x=0, y=0, r=0, o=0, s=0) => {
+	return new Vector2(x, y, r, o, s);
 }
 
 //Checks number to see if it's even or odd
@@ -331,6 +331,15 @@ const degToRad = (deg=0) => {
 //Average
 const average = (nums=[0,0]) => {
 	return nums.reduce((a, b) => a+b,0)/nums.length;
+}
+
+//Valuates vars to see if they are true of false
+const valuate = (val) => {
+	if (typeof val != "undefined" && val != null) {
+		return (val == 1 || val == true || (typeof val == "string" && val.toLowerCase() == "true"));
+	} else {
+		return false;
+	}
 }
 
 //Helper function for random ints same as range just with less steps
@@ -402,6 +411,10 @@ const imageData = function(id="", src="", size=new Vector2()) {
 		data.width = size.x;
 		data.height = size.y;
 	}
+}
+
+const imageD = (id="", src="", size=new Vector2()) => {
+	return new imageData(id, src, size);
 }
 
 //Engine resources

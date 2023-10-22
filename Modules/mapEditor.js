@@ -1,16 +1,16 @@
 function editor() {
 	this.locationId = 0;
-	this.nameTag = new nameTag("newMap", "mapTag");
-	this.mapSize = new Vector2();
-	this.mapPosInit = new Vector2();
-	this.playerPosInit = new Vector2();
-	this.tileSize = new Vector2();
+	this.nameTag = nt("newMap", "mapTag");
+	this.mapSize = Vec2();
+	this.mapPosInit = Vec2();
+	this.playerPosInit = Vec2();
+	this.tileSize = Vec2();
 	this.tiles = [];
 	
-	this.oldNameTag = new nameTag("newMap", "mapTag");
-	this.oldTileSize = new Vector2(32, 32);
-	this.gridNameTag = new nameTag("gridTile", "grid");
-	this.gridSize = new Vector2();
+	this.oldNameTag = nt("newMap", "mapTag");
+	this.oldTileSize = Vec2(32, 32);
+	this.gridNameTag = nt("gridTile", "grid");
+	this.gridSize = Vec2();
 	this.thisGridTile = null;
 	this.currentGridTile = null;
 	this.oldCurrentTileNumber = -1;
@@ -26,10 +26,10 @@ function editor() {
 	this.currentTileTableName = null;
 	
 	let thisMap = null;
-	let oldMapPos = new Vector2();
+	let oldMapPos = Vec2();
 	let movingGrid = false;
 	
-	Cursor.cursor.base.size = new Vector2(1, 1);
+	getCursor().base.size = Vec2(1, 1);
 	
 	let gridTiles = [];
 	let oldLength = 0;
@@ -37,7 +37,7 @@ function editor() {
 	
 	//Gets map as a string
 	this.getTrueMap = function() {
-	return "new map("+this.locationId+", new nameTag('"+this.nameTag.name+"', '"+this.nameTag.tag+"'), new Vector2("+this.mapSize.x+", "+this.mapSize.y+"), new Vector2("+this.mapPosInit.x+", "+this.mapPosInit.y+"), new Vector2("+this.playerPosInit.x+", "+this.playerPosInit.y+"), new Vector2("+this.tileSize.x+", "+this.tileSize.y+"), "+JSON.stringify(this.tiles).replace("'", "")+");";
+	return "M("+this.locationId+", nt('"+this.nameTag.name+"', '"+this.nameTag.tag+"'), Vec2("+this.mapSize.x+", "+this.mapSize.y+"), Vec2("+this.mapPosInit.x+", "+this.mapPosInit.y+"), Vec2("+this.playerPosInit.x+", "+this.playerPosInit.y+"), Vec2("+this.tileSize.x+", "+this.tileSize.y+"), "+JSON.stringify(this.tiles).replace("'", "")+");";
 	}
 	
 	//Save map
@@ -64,91 +64,91 @@ function editor() {
 	}
 	
 	//UI
-	this.panel = new Rectangle(8, new baseObject(false, new nameTag("editorPanel", "editor"), new Vector2(400, 720), new Vector2(1080, 360), new colorData("lightgrey", 1)));
-	this.nameTxt = new Text(8, "Name:", new baseObject(false, new nameTag("nameTxt", "editor"), new Vector2("30px Arial", false, "left"), new Vector2(940, 50), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.nameTxtBox = new TextBox(8, "30px Arial", "white", new baseObject(false, new nameTag("nameTxtBox", "editor"), new Vector2(100, 50), new Vector2(1085, 50), new colorData("black", 1)));
+	this.panel = rectangle(8, base(false, nt("editorPanel", "editor"), Vec2(400, 720), Vec2(1080, 360), colorD("lightgrey", 1)));
+	this.nameTxt = text(8, "Name:", base(false, nt("nameTxt", "editor"), Vec2("30px Arial", false, "left"), Vec2(940, 50), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.nameTxtBox = textBox(8, "30px Arial", "white", base(false, nt("nameTxtBox", "editor"), Vec2(100, 50), Vec2(1085, 50), colorD("black", 1)));
 	this.nameTxtBox.value = "newMap";
-	this.idTxt = new Text(8, "Id:", new baseObject(false, new nameTag("idTxt", "editor"), new Vector2("30px Arial", false, "left"), new Vector2(940, 120), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.idTxtBox = new TextBox(8, "30px Arial", "white", new baseObject(false, new nameTag("idTxtBox", "editor"), new Vector2(50, 50), new Vector2(1005, 120), new colorData("black", 1)));
+	this.idTxt = text(8, "Id:", base(false, nt("idTxt", "editor"), Vec2("30px Arial", false, "left"), Vec2(940, 120), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.idTxtBox = textBox(8, "30px Arial", "white", base(false, nt("idTxtBox", "editor"), Vec2(50, 50), Vec2(1005, 120), colorD("black", 1)));
 	this.idTxtBox.value = "0";
-	this.sizeXTxt = new Text(8, "Size: X-", new baseObject(false, new nameTag("sizeXTxt", "editor"), new Vector2("30px Arial", false, "left"), new Vector2(940, 190), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.sizeXTxtBox = new TextBox(8, "30px Arial", "white", new baseObject(false, new nameTag("sizeXTxtBox", "editor"), new Vector2(50, 50), new Vector2(1075, 190), new colorData("black", 1)));
+	this.sizeXTxt = text(8, "Size: X-", base(false, nt("sizeXTxt", "editor"), Vec2("30px Arial", false, "left"), Vec2(940, 190), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.sizeXTxtBox = textBox(8, "30px Arial", "white", base(false, nt("sizeXTxtBox", "editor"), Vec2(50, 50), Vec2(1075, 190), colorD("black", 1)));
 	this.sizeXTxtBox.value = "0";
-	this.sizeYTxt = new Text(8, "Y-", new baseObject(false, new nameTag("sizeYTxt", "editor"), new Vector2("30px Arial", false, "left"), new Vector2(1110, 190), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.sizeYTxtBox = new TextBox(8, "30px Arial", "white", new baseObject(false, new nameTag("sizeYTxtBox", "editor"), new Vector2(50, 50), new Vector2(1167, 190), new colorData("black", 1)));
+	this.sizeYTxt = text(8, "Y-", base(false, nt("sizeYTxt", "editor"), Vec2("30px Arial", false, "left"), Vec2(1110, 190), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.sizeYTxtBox = textBox(8, "30px Arial", "white", base(false, nt("sizeYTxtBox", "editor"), Vec2(50, 50), Vec2(1167, 190), colorD("black", 1)));
 	this.sizeYTxtBox.value = "0";
-	this.startPosXTxt = new Text(8, "Start: X-", new baseObject(false, new nameTag("startPosXTxt", "editor"), new Vector2("30px Arial", false, "left"), new Vector2(940, 260), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.startPosXTxtBox = new TextBox(8, "30px Arial", "white", new baseObject(false, new nameTag("startPosXTxtBox", "editor"), new Vector2(50, 50), new Vector2(1080, 260), new colorData("black", 1)));
+	this.startPosXTxt = text(8, "Start: X-", base(false, nt("startPosXTxt", "editor"), Vec2("30px Arial", false, "left"), Vec2(940, 260), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.startPosXTxtBox = textBox(8, "30px Arial", "white", base(false, nt("startPosXTxtBox", "editor"), Vec2(50, 50), Vec2(1080, 260), colorD("black", 1)));
 	this.startPosXTxtBox.value = "0";
-	this.startPosYTxt = new Text(8, "Y-", new baseObject(false, new nameTag("startPosYTxt", "editor"), new Vector2("30px Arial", false, "left"), new Vector2(1110, 260), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.startPosYTxtBox = new TextBox(8, "30px Arial", "white", new baseObject(false, new nameTag("startPosYTxtBox", "editor"), new Vector2(50, 50), new Vector2(1167, 260), new colorData("black", 1)));
+	this.startPosYTxt = text(8, "Y-", base(false, nt("startPosYTxt", "editor"), Vec2("30px Arial", false, "left"), Vec2(1110, 260), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.startPosYTxtBox = textBox(8, "30px Arial", "white", base(false, nt("startPosYTxtBox", "editor"), Vec2(50, 50), Vec2(1167, 260), colorD("black", 1)));
 	this.startPosYTxtBox.value = "0";
-	this.playerPosXTxt = new Text(8, "Player: X-", new baseObject(false, new nameTag("playerPosXTxt", "editor"), new Vector2("30px Arial", false, "left"), new Vector2(940, 330), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.playerPosXTxtBox = new TextBox(8, "30px Arial", "white", new baseObject(false, new nameTag("playerPosXTxtBox", "editor"), new Vector2(50, 50), new Vector2(1100, 330), new colorData("black", 1)));
+	this.playerPosXTxt = text(8, "Player: X-", base(false, nt("playerPosXTxt", "editor"), Vec2("30px Arial", false, "left"), Vec2(940, 330), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.playerPosXTxtBox = textBox(8, "30px Arial", "white", base(false, nt("playerPosXTxtBox", "editor"), Vec2(50, 50), Vec2(1100, 330), colorD("black", 1)));
 	this.playerPosXTxtBox.value = "0";
-	this.playerPosYTxt = new Text(8, "Y-", new baseObject(false, new nameTag("playerPosYTxt", "editor"), new Vector2("30px Arial", false, "left"), new Vector2(1130, 330), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.playerPosYTxtBox = new TextBox(8, "30px Arial", "white", new baseObject(false, new nameTag("playerPosYTxtBox", "editor"), new Vector2(50, 50), new Vector2(1190, 330), new colorData("black", 1)));
+	this.playerPosYTxt = text(8, "Y-", base(false, nt("playerPosYTxt", "editor"), Vec2("30px Arial", false, "left"), Vec2(1130, 330), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.playerPosYTxtBox = textBox(8, "30px Arial", "white", base(false, nt("playerPosYTxtBox", "editor"), Vec2(50, 50), Vec2(1190, 330), colorD("black", 1)));
 	this.playerPosYTxtBox.value = "0";
-	this.tileSizeXTxt = new Text(8, "Tile: X-", new baseObject(false, new nameTag("tileSizeXTxt", "editor"), new Vector2("30px Arial", false, "left"), new Vector2(940, 400), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.tileSizeXTxtBox = new TextBox(8, "30px Arial", "white", new baseObject(false, new nameTag("tileSizeXTxtBox", "editor"), new Vector2(50, 50), new Vector2(1065, 400), new colorData("black", 1)));
+	this.tileSizeXTxt = text(8, "Tile: X-", base(false, nt("tileSizeXTxt", "editor"), Vec2("30px Arial", false, "left"), Vec2(940, 400), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.tileSizeXTxtBox = textBox(8, "30px Arial", "white", base(false, nt("tileSizeXTxtBox", "editor"), Vec2(50, 50), Vec2(1065, 400), colorD("black", 1)));
 	this.tileSizeXTxtBox.value = "32";
-	this.tileSizeYTxt = new Text(8, "Y-", new baseObject(false, new nameTag("tileSizeYTxt", "editor"), new Vector2("30px Arial", false, "left"), new Vector2(1100, 400), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.tileSizeYTxtBox = new TextBox(8, "30px Arial", "white", new baseObject(false, new nameTag("tileSizeYTxtBox", "editor"), new Vector2(50, 50), new Vector2(1160, 400), new colorData("black", 1)));
+	this.tileSizeYTxt = text(8, "Y-", base(false, nt("tileSizeYTxt", "editor"), Vec2("30px Arial", false, "left"), Vec2(1100, 400), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.tileSizeYTxtBox = textBox(8, "30px Arial", "white", base(false, nt("tileSizeYTxtBox", "editor"), Vec2(50, 50), Vec2(1160, 400), colorD("black", 1)));
 	this.tileSizeYTxtBox.value = "32";
-	this.currentTileTxt = new Text(8, "none", new baseObject(false, new nameTag("currentTileTxt", "editor"), new Vector2("30px Arial", false, "center"), new Vector2(1150, 550), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.leftBttn = new Rectangle(8, new baseObject(false, new nameTag("leftBttn", "editor"), new Vector2(50, 50), new Vector2(1100, 600), new colorData("grey", 1)));
-	this.leftBttnTxt = new Text(8, "<", new baseObject(false, new nameTag("leftBttnTxt", "editor"), new Vector2("30px Arial", false, "center"), new Vector2(1100, 600), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.leftBttnLink = new buttonLink(this.leftBttn, this.leftBttnTxt, recCollision, () => {
+	this.currentTileTxt = text(8, "none", base(false, nt("currentTileTxt", "editor"), Vec2("30px Arial", false, "center"), Vec2(1150, 550), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.leftBttn = rectangle(8, base(false, nt("leftBttn", "editor"), Vec2(50, 50), Vec2(1100, 600), colorD("grey", 1)));
+	this.leftBttnTxt = text(8, "<", base(false, nt("leftBttnTxt", "editor"), Vec2("30px Arial", false, "center"), Vec2(1100, 600), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.leftBttnLink = bttnL(this.leftBttn, this.leftBttnTxt, recCollision, () => {
 		if (this.currentTileTable != null && this.currentTileNumber > 0) {
 			this.currentTileNumber--;
 		} else {
 			this.currentTileTableNumber--;
 			this.currentTileNumber = this.currentTileTable.length;
 		}
-	}, new Vector2(new colorData("grey"), new colorData("darkgrey")));
-	this.rightBttn = new Rectangle(8, new baseObject(false, new nameTag("rightBttn", "editor"), new Vector2(50, 50), new Vector2(1200, 600), new colorData("grey", 1)));
-	this.rightBttnTxt = new Text(8, ">", new baseObject(false, new nameTag("rightBttnTxt", "editor"), new Vector2("30px Arial", false, "center"), new Vector2(1200, 600), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.rightBttnLink = new buttonLink(this.rightBttn, this.rightBttnTxt, recCollision, () => {
+	}, Vec2(colorD("grey"), colorD("darkgrey")));
+	this.rightBttn = rectangle(8, base(false, nt("rightBttn", "editor"), Vec2(50, 50), Vec2(1200, 600), colorD("grey", 1)));
+	this.rightBttnTxt = text(8, ">", base(false, nt("rightBttnTxt", "editor"), Vec2("30px Arial", false, "center"), Vec2(1200, 600), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.rightBttnLink = bttnL(this.rightBttn, this.rightBttnTxt, recCollision, () => {
 		if (this.currentTileTable != null && this.currentTileNumber < this.currentTileTable.length) {
 			this.currentTileNumber++;
 		} else {
 			this.currentTileNumber = 0;
 			this.currentTileTableNumber++;
 		}
-	}, new Vector2(new colorData("grey"), new colorData("darkgrey")));
-	this.currentTileNumberTxt = new Text(8, "0", new baseObject(false, new nameTag("currentTileNumberTxt", "editor"), new Vector2("30px Arial", false, "center"), new Vector2(1150, 600), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.layerTxt = new Text(8, "Layer", new baseObject(false, new nameTag("currentLayerTxt", "editor"), new Vector2("30px Arial", false, "center"), new Vector2(1150, 645), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.leftLayerBttn = new Rectangle(8, new baseObject(false, new nameTag("leftLayerBttn", "editor"), new Vector2(50, 50), new Vector2(1100, 690), new colorData("grey", 1)));
-	this.leftLayerBttnTxt = new Text(8, "<", new baseObject(false, new nameTag("leftLayerBttnTxt", "editor"), new Vector2("30px Arial", false, "center"), new Vector2(1100, 690), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.leftLayerBttnLink = new buttonLink(this.leftLayerBttn, this.leftLayerBttnTxt, recCollision, () => {
+	}, Vec2(colorD("grey"), colorD("darkgrey")));
+	this.currentTileNumberTxt = text(8, "0", base(false, nt("currentTileNumberTxt", "editor"), Vec2("30px Arial", false, "center"), Vec2(1150, 600), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.layerTxt = text(8, "Layer", base(false, nt("currentLayerTxt", "editor"), Vec2("30px Arial", false, "center"), Vec2(1150, 645), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.leftLayerBttn = rectangle(8, base(false, nt("leftLayerBttn", "editor"), Vec2(50, 50), Vec2(1100, 690), colorD("grey", 1)));
+	this.leftLayerBttnTxt = text(8, "<", base(false, nt("leftLayerBttnTxt", "editor"), Vec2("30px Arial", false, "center"), Vec2(1100, 690), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.leftLayerBttnLink = bttnL(this.leftLayerBttn, this.leftLayerBttnTxt, recCollision, () => {
 		this.currentLayer--;
-	}, new Vector2(new colorData("grey"), new colorData("darkgrey")));
-	this.rightLayerBttn = new Rectangle(8, new baseObject(false, new nameTag("rightLayerBttn", "editor"), new Vector2(50, 50), new Vector2(1200, 690), new colorData("grey", 1)));
-	this.rightLayerBttnTxt = new Text(8, ">", new baseObject(false, new nameTag("rightLayerBttnTxt", "editor"), new Vector2("30px Arial", false, "center"), new Vector2(1200, 690), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.rightLayerBttnLink = new buttonLink(this.rightLayerBttn, this.rightLayerBttnTxt, recCollision, () => {
+	}, Vec2(colorD("grey"), colorD("darkgrey")));
+	this.rightLayerBttn = rectangle(8, base(false, nt("rightLayerBttn", "editor"), Vec2(50, 50), Vec2(1200, 690), colorD("grey", 1)));
+	this.rightLayerBttnTxt = text(8, ">", base(false, nt("rightLayerBttnTxt", "editor"), Vec2("30px Arial", false, "center"), Vec2(1200, 690), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.rightLayerBttnLink = bttnL(this.rightLayerBttn, this.rightLayerBttnTxt, recCollision, () => {
 		this.currentLayer++;
-	}, new Vector2(new colorData("grey"), new colorData("darkgrey")));
-	this.currentLayerTxt = new Text(8, "1", new baseObject(false, new nameTag("currentLayerTxt", "editor"), new Vector2("30px Arial", false, "center"), new Vector2(1150, 690), new colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
+	}, Vec2(colorD("grey"), colorD("darkgrey")));
+	this.currentLayerTxt = text(8, "1", base(false, nt("currentLayerTxt", "editor"), Vec2("30px Arial", false, "center"), Vec2(1150, 690), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
 	
 	//Reset map
 	this.resetMap = () => {
 		if (currentMap() != undefined) {
 			oldMapPos = currentMap().mapPos;
-			currentMap().dir = new Vector2();
+			currentMap().dir = Vec2();
 		}
 		deleteMap(this.nameTag);
 	}
 	
 	//Tools
 	this.fillLatch = false;
-	this.fill = function(mapPos=new Vector2(), size=new Vector2()) {
+	this.fill = (mapPos=Vec2(), size=Vec2()) => {
 		if (gridTiles != null) {
 			for (let x=0;x<size.x;x++) {
 				for (let y=0;y<size.y;y++) {
-					let thisMapPos = mapPos.duplicate().addV(new Vector2(x, y));
+					let thisMapPos = mapPos.duplicate().addV(Vec2(x, y));
 					//this.thisTile = currentMap().getTileByMapPos(thisMapPos, this.currentLayer);
 					if (currentMap().getTileByMapPos(thisMapPos, this.currentLayer).length == 0) {
-						let newTile = new tile(this.currentTileNumber, thisMapPos.duplicate(), this.currentLayer, this.currentTileTableName);
+						let newTile = Tile(this.currentTileNumber, thisMapPos.duplicate(), this.currentLayer, this.currentTileTableName);
 						this.tiles.push(newTile.duplicate());
 						if (x == size.x-1 && y == size.y-1) {
 							this.resetMap();
@@ -232,12 +232,12 @@ function editor() {
 			}
 			this.locationId = parseInt(this.idTxtBox.value);
 			if (!this.sizeXTxtBox.isSelected() && !this.sizeYTxtBox.isSelected()) {
-				this.mapSize = new Vector2(parseInt(this.sizeXTxtBox.value), parseInt(this.sizeYTxtBox.value));
+				this.mapSize = Vec2(parseInt(this.sizeXTxtBox.value), parseInt(this.sizeYTxtBox.value));
 			}
-			this.mapPosInit = new Vector2(parseFloat(this.startPosXTxtBox.value), parseFloat(this.startPosYTxtBox.value));
-			this.playerPosInit = new Vector2(parseFloat(this.playerPosXTxtBox.value), parseFloat(this.playerPosYTxtBox.value));
+			this.mapPosInit = Vec2(parseFloat(this.startPosXTxtBox.value), parseFloat(this.startPosYTxtBox.value));
+			this.playerPosInit = Vec2(parseFloat(this.playerPosXTxtBox.value), parseFloat(this.playerPosYTxtBox.value));
 			if (!this.tileSizeXTxtBox.isSelected() && !this.tileSizeYTxtBox.isSelected()) {
-				this.tileSize = new Vector2(parseFloat(this.tileSizeXTxtBox.value), parseFloat(this.tileSizeYTxtBox.value));
+				this.tileSize = Vec2(parseFloat(this.tileSizeXTxtBox.value), parseFloat(this.tileSizeYTxtBox.value));
 			}
 			if (this.currentTile != null) {
 				this.currentTileTxt.text = this.currentTile.base.nameTag.name;
@@ -259,10 +259,10 @@ function editor() {
 				deleteByNameTag(this.gridNameTag, 0, true);
 				for (let x=1;x<=this.mapSize.x;x++) {
 					for (let y=1;y<=this.mapSize.y;y++) {
-						let thisPos = new Vector2((x*this.tileSize.x*config.scale)-((this.tileSize.x*config.scale)/2), (y*this.tileSize.y*config.scale)-((this.tileSize.y*config.scale)/2));
+						let thisPos = Vec2((x*this.tileSize.x*config.scale)-((this.tileSize.x*config.scale)/2), (y*this.tileSize.y*config.scale)-((this.tileSize.y*config.scale)/2));
 						let thisNewPos = thisPos.addV(oldMapPos);
-						let gridTile = new Rectangle(8, new baseObject(false, new nameTag(this.gridNameTag.name+"_"+x+"_"+y, this.gridNameTag.tag), this.tileSize.multi(config.scale), thisNewPos, new colorData("grey", 0.25)));
-						gridTile.mapPos = new Vector2(x, y);
+						let gridTile = rectangle(8, base(false, nt(this.gridNameTag.name+"_"+x+"_"+y, this.gridNameTag.tag), this.tileSize.multi(config.scale), thisNewPos, colorD("grey", 0.25)));
+						gridTile.mapPos = Vec2(x, y);
 						gridTile.base.startPosition = thisPos.duplicate();
 						layer[8].unshift(gridTile);
 						loaded = false;
@@ -303,7 +303,7 @@ function editor() {
 									this.thisTile = currentMap().getTileByMapPos(this.thisGridTile.mapPos, this.currentLayer);
 									if (mousePressed[0] && !this.placeLatch && this.thisTile.length == 0) {
 										this.currentGridTile = this.thisGridTile;
-										let newTile = new tile(this.currentTileNumber, this.currentGridTile.mapPos.duplicate(), this.currentLayer, this.currentTileTableName);
+										let newTile = Tile(this.currentTileNumber, this.currentGridTile.mapPos.duplicate(), this.currentLayer, this.currentTileTableName);
 										this.tiles.push(newTile.duplicate());
 										this.resetMap();
 										this.placeLatch = true;
@@ -353,21 +353,21 @@ function editor() {
 				}
 			}
 			//Update UI
-			let visCurrentTileNameTag = new nameTag("visCurrentTile", "editor");
+			let visCurrentTileNameTag = nt("visCurrentTile", "editor");
 			if (this.currentTileNumber != this.oldCurrentTileNumber || getByNameTag(visCurrentTileNameTag) == null) {
 				if (this.currentTile != null) {
 					deleteByNameTag(visCurrentTileNameTag);
 					let visCurrentTile = this.currentTile.duplicate();
 					visCurrentTile.layerNumber = 8;
 					visCurrentTile.base.nameTag = visCurrentTileNameTag;
-					visCurrentTile.base.size = new Vector2(64, 64);
-					visCurrentTile.base.position = new Vector2(1150, 500);
+					visCurrentTile.base.size = Vec2(64, 64);
+					visCurrentTile.base.position = Vec2(1150, 500);
 					addObject(visCurrentTile);
 				}
 				this.oldCurrentTileNumber = this.currentTileNumber;
 			}
 			if (!this.oldNameTag.same(this.nameTag)) {
-				deleteByNameTag(new nameTag("", this.oldNameTag.name), 2);
+				deleteByNameTag(nt("", this.oldNameTag.name), 2);
 				this.resetMap();
 				this.oldNameTag = this.nameTag.duplicate();
 			}
@@ -423,8 +423,8 @@ function editor() {
 				deleteByNameTag(this.panel.base.nameTag);
 			}
 			if (getByNameTag(this.gridNameTag, 0, false, true) != null) {
-				this.mapSize = new Vector2();
-				this.gridSize = new Vector2();
+				this.mapSize = Vec2();
+				this.gridSize = Vec2();
 				layer[8] = [];
 			}
 		}
